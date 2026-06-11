@@ -60,17 +60,25 @@ Metrics from the out-of-sample test data set.
 
 ### RFT
 
-**Run 1**
+**Run 1 (epochs=1)**
 
 ![](./images/rft-eval-run-1.png)
 
-**Run 2**
+**Run 2 (epoch=1)**
 
 ![](./images/rft-eval-run-2.png)
 
-**Run 3**
+**Run 3 (epochs=1)**
 
-![](./images/rft_eval-run-3.png)
+![](./images/rft-eval-run-3.png)
+
+**Run 4 (epochs=3)**
+
+![](./images/rft-eval-run-4.png)
+
+**Run 4 (epochs=1)**
+
+![](./images/rft-eval-run-5.png)
 
 ### SFT
 
