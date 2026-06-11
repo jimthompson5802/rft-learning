@@ -1,0 +1,7 @@
+.venv/
+.uv-cache/
+__pycache__/
+
+# model training folders
+grpo-arithmetic-lora-adapter/
+grpo-arithmetic-lora-demo/
