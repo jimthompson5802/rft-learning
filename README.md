@@ -1,7 +1,8 @@
 # RFT Learning
 
-This repository contains small experiments for reinforcement fine-tuning concepts with LoRA, including:
+This repository contains small experiments for supervised and reinforcement fine-tuning concepts with LoRA, including:
 
+- `sft-lora-lesson.ipynb`: a LoRA + SFT arithmetic lesson
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
 
 ## Requirements
@@ -31,7 +32,7 @@ This will create `.venv` and install the project dependencies from `pyproject.to
 
 ## Using The Notebook
 
-Open `rft-lora-lesson.ipynb` in your notebook editor and select the local kernel from `.venv`.
+Open either `sft-lora-lesson.ipynb` or `rft-lora-lesson.ipynb` in your notebook editor and select the local kernel from `.venv`.
 
 If your editor does not detect it automatically, use the Python interpreter at:
 
@@ -50,4 +51,5 @@ The project currently uses:
 
 ## Notes
 
+- `sft-lora-lesson.ipynb` demonstrates supervised fine-tuning with known target completions.
 - The lesson currently depends on the `trl` API version installed in this repo.
