@@ -84,6 +84,10 @@ Metrics from the out-of-sample test data set.
 
 ![](./images/rft-eval-run-6.png)
 
+**Run 7 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
+
+![](./images/rft-eval-run-7.png)
+
 ### SFT
 
 **Run 1**
