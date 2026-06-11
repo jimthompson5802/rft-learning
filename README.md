@@ -60,43 +60,26 @@ Metrics from the out-of-sample test data set.
 
 ### RFT
 
-**Run 1 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
+|Model|epochs|Before RFT|After RFT|
+|-----|:----:|----------|---------|
+|Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-1.png)|
+|Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-2.png)|
+|Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-3.png)|
+|Qwen2.5-0.5B-Instruct|3|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-4.png)|
+|Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-5.png)|
+|Qwen2.5-1.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-6.png)|
+|Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-7.png)|
 
-![](./images/rft-eval-run-1.png)
 
-**Run 2 (epoch=1) Qwen/Qwen2.5-0.5B-Instruct**
 
-![](./images/rft-eval-run-2.png)
 
-**Run 3 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
-
-![](./images/rft-eval-run-3.png)
-
-**Run 4 (epochs=3) Qwen/Qwen2.5-0.5B-Instruct**
-
-![](./images/rft-eval-run-4.png)
-
-**Run 5 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
-
-![](./images/rft-eval-run-5.png)
-
-**Run 6 (epochs=1) Qwen/Qwen2.5-1.5B-Instruct**
-
-![](./images/rft-eval-run-6.png)
-
-**Run 7 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
-
-![](./images/rft-eval-run-7.png)
 
 ### SFT
 
-**Run 1**
-
-![](./images/sft-eval-run-1.png)
-
-**Run 2**
-
-![](./images/sft-eval-run-2.png)
+|Model|epochs|Before SFT|After SFT|
+|-----|:----:|----------|---------|
+|Qwen2.5-0.5B-Instruct|1|![](./images/sft-eval-run-before.png)|![](./images/sft-eval-run-1.png)|
+|Qwen2.5-0.5B-Instruct|1|![](./images/sft-eval-run-before.png)|![](./images/sft-eval-run-2.png)|
 
 
 
