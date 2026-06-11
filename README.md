@@ -60,25 +60,29 @@ Metrics from the out-of-sample test data set.
 
 ### RFT
 
-**Run 1 (epochs=1)**
+**Run 1 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
 
 ![](./images/rft-eval-run-1.png)
 
-**Run 2 (epoch=1)**
+**Run 2 (epoch=1) Qwen/Qwen2.5-0.5B-Instruct**
 
 ![](./images/rft-eval-run-2.png)
 
-**Run 3 (epochs=1)**
+**Run 3 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
 
 ![](./images/rft-eval-run-3.png)
 
-**Run 4 (epochs=3)**
+**Run 4 (epochs=3) Qwen/Qwen2.5-0.5B-Instruct**
 
 ![](./images/rft-eval-run-4.png)
 
-**Run 4 (epochs=1)**
+**Run 5 (epochs=1) Qwen/Qwen2.5-0.5B-Instruct**
 
 ![](./images/rft-eval-run-5.png)
+
+**Run 6 (epochs=1) Qwen/Qwen2.5-1.5B-Instruct**
+
+![](./images/rft-eval-run-6.png)
 
 ### SFT
 
