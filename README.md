@@ -56,47 +56,95 @@ The project currently uses:
 
 ## Number of batches for SFT and RFT
 
-The difference is coming from `GRPOTrainer` semantics, not from a different dataset.
+Both notebooks start from the same amount of data. The different batch counts come from what a “batch” means to each trainer.
 
-Both notebooks build the same raw data:
-- `MAX_A = 21`, `MAX_B = 11` gives `20 * 10 = 200` examples total.
-- `train_test_split(test_size=0.25, seed=42)` gives `150` train and `50` test in both notebooks.
+Here are the shared values first:
 
-What changes is how one “training step” is formed.
+- `MAX_A = 21`
+  - The code loops over `a` from `1` to `20`.
+  - That gives `20` possible `a` values.
 
-For `sft-lora-lesson.ipynb`:
-- `per_device_train_batch_size=2`
-- `gradient_accumulation_steps=4`
+- `MAX_B = 11`
+  - The code loops over `b` from `1` to `10`.
+  - That gives `10` possible `b` values.
 
-So SFT does normal supervised batching:
-- micro-batches per epoch: `ceil(150 / 2) = 75`
-- optimizer steps per epoch: `ceil(75 / 4) = 19`
+- Total examples:
+  - `20 * 10 = 200`
+  - Each example is one addition problem like `"What is 9 + 3?"`
 
-That is why SFT typically looks like about `19` training steps.
+- `test_size = 0.25`
+  - 25% of the 200 examples go to test.
+  - `200 * 0.25 = 50` test examples.
 
-For `rft-lora-lesson.ipynb`:
-- `per_device_train_batch_size=2`
-- `gradient_accumulation_steps=4`
-- `num_generations=4`
+- Training examples:
+  - `200 - 50 = 150`
+  - So both notebooks train on exactly `150` examples.
 
-In GRPO, TRL requires the effective batch size to be divisible by `num_generations`, and it uses those generations to form grouped RL updates. With 1 process, the effective batch size is:
+For the SFT notebook, these values mean:
 
-`2 * 4 = 8`
+- `per_device_train_batch_size = 2`
+  - Each forward/backward pass uses `2` training examples.
 
-Since `num_generations=4`, each GRPO update uses:
+- `gradient_accumulation_steps = 4`
+  - The trainer does `4` of those small passes before taking `1` optimizer step.
 
-`8 / 4 = 2 prompts`
+- So one optimizer step in SFT represents:
+  - `2 examples per mini-batch * 4 mini-batches = 8 examples`
 
-So steps per epoch become:
+- Number of SFT mini-batches in one epoch:
+  - `150 training examples / 2 examples per mini-batch = 75 mini-batches`
 
-`ceil(150 / 2) = 75`
+- Number of SFT optimizer steps in one epoch:
+  - `75 mini-batches / 4 accumulation steps = 18.75`
+  - Rounded up by the trainer, that is about `19 optimizer steps`
 
-That is why RFT/GRPO shows many more training batches/steps than SFT, even though the train split is identical.
+So in SFT:
+- `2` = examples processed at once
+- `4` = how many of those small batches are accumulated
+- `8` = effective examples contributing to one parameter update
+- `19` = approximate update steps for the epoch
 
-The official TRL docs call this out:
-- GRPO `num_generations`: the effective batch size must be evenly divisible by it: https://huggingface.co/docs/trl/en/grpo_trainer
-- GRPO generation batching defaults are tied to the effective training batch size / accumulation behavior: https://huggingface.co/docs/trl/en/grpo_trainer
+For the RFT / GRPO notebook, the shared values `2` and `4` still exist, but there is one extra value:
 
-So the short version is: SFT accumulates 4 ordinary mini-batches before 1 optimizer step, while GRPO uses that same effective batch budget to generate grouped rollouts, and with `num_generations=4` that changes the number of prompts consumed per update.
+- `num_generations = 4`
+  - For each prompt, GRPO generates `4` different candidate completions.
+  - Those 4 completions form one comparison group for reward computation.
 
-If you want, I can also add a tiny diagnostic cell to both notebooks that prints the expected step count before training so this is visible directly in the lessons.
+Now the other values mean:
+
+- `per_device_train_batch_size = 2`
+  - GRPO starts with `2` prompts per micro-batch.
+
+- `gradient_accumulation_steps = 4`
+  - It accumulates across `4` micro-batches.
+
+- Effective GRPO batch size:
+  - `2 prompts per micro-batch * 4 accumulation steps = 8 prompt slots`
+
+- `num_generations = 4`
+  - Each actual training prompt needs `4` generated completions.
+
+- So the number of distinct prompts represented in one GRPO update is:
+  - `8 total slots / 4 generations per prompt = 2 prompts`
+
+That is the key difference.
+
+In SFT:
+- one update covers `8 distinct training examples`
+
+In GRPO:
+- one update covers `2 distinct prompts`, because each prompt is expanded into `4` sampled completions
+
+Then the GRPO epoch length becomes:
+
+- `150 training prompts / 2 prompts per update = 75 updates`
+
+So in GRPO:
+- `2` = prompts loaded per micro-batch
+- `4` = accumulation steps
+- `8` = effective prompt-generation slots in one update
+- `4` = generations sampled for each prompt
+- `2` = distinct prompts consumed per final GRPO update
+- `75` = approximate updates for the epoch
+
+That is why the batch or step count is different even though both notebooks start with the same `150` training examples. The SFT trainer uses each example once per update flow, while the GRPO trainer expands each prompt into `4` generated candidates, so each update consumes fewer distinct prompts.
