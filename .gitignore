@@ -5,3 +5,5 @@ __pycache__/
 # model training folders
 grpo-arithmetic-lora-adapter/
 grpo-arithmetic-lora-demo/
+sft-arithmetic-lora-adapter/
+sft-arithmetic-lora-demo/
