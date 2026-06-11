@@ -54,6 +54,36 @@ The project currently uses:
 - `sft-lora-lesson.ipynb` demonstrates supervised fine-tuning with known target completions.
 - The lesson currently depends on the `trl` API version installed in this repo.
 
+## Reproducibility
+
+Metrics from the out-of-sample test data set.
+
+### RFT
+
+**Run 1**
+
+![](./images/rft-eval-run-1.png)
+
+**Run 2**
+
+![](./images/rft-eval-run-2.png)
+
+**Run 3**
+
+![](./images/rft_eval-run-3.png)
+
+### SFT
+
+**Run 1**
+
+![](./images/sft-eval-run-1.png)
+
+**Run 2**
+
+![](./images/sft-eval-run-2.png)
+
+
+
 ## Number of batches for SFT and RFT
 
 Both notebooks start from the same amount of data. The different batch counts come from what a “batch” means to each trainer.
