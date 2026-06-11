@@ -67,7 +67,7 @@ Metrics from the out-of-sample test data set.
 |Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-3.png)|
 |Qwen2.5-0.5B-Instruct|3|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-4.png)|
 |Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-5.png)|
-|Qwen2.5-1.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-6.png)|
+|Qwen2.5-1.5B-Instruct|1|![](./images/rft-eval-run-6-before.png)|![](./images/rft-eval-run-6.png)|
 |Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-7.png)|
 
 
