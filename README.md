@@ -1,4 +1,4 @@
-# RFT Learning
+# Reinforcement Fine-Tuning Learning Repo
 
 This repository contains small experiments for supervised and reinforcement fine-tuning concepts with LoRA, including:
 
