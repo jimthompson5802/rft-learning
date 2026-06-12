@@ -9,6 +9,8 @@ This repository contains small experiments for supervised and reinforcement fine
 
 Both notebooks fine-tune a model on a simple arithmetic addition task. Given prompts such as `What is 9 + 3?`, the model is trained to respond in the exact format `<think>...</think><answer>...</answer>`, where the `<answer>` tag contains the correct sum.
 
+For details on how RFT works see [RFT Explanation document](./rft-explanation.md)
+
 ## Requirements
 
 - `uv`
