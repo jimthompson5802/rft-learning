@@ -4,6 +4,7 @@ This repository contains small experiments for supervised and reinforcement fine
 
 - `sft-lora-lesson.ipynb`: a LoRA + SFT arithmetic lesson
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
+- `grpo-completion-exploration.ipynb`: a notebook for inspecting GRPO completion Parquet files
 
 ## Fine-Tuning Task
 
@@ -38,7 +39,9 @@ This will create `.venv` and install the project dependencies from `pyproject.to
 
 ## Using The Notebook
 
-Open either `sft-lora-lesson.ipynb` or `rft-lora-lesson.ipynb` in your notebook editor and select the local kernel from `.venv`.
+Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, or `grpo-completion-exploration.ipynb` in your notebook editor and select the local kernel from `.venv`.
+
+`grpo-completion-exploration.ipynb` reads a file from `grpo-arithmetic-lora-demo/completions` into a pandas DataFrame. Set `parquet_filename` at the top of the notebook to choose the file, and optionally change `records_to_show` to control how many records are rendered. The notebook prints the requested count, the total number of records in the file, and the number actually shown, then displays each record with the full `prompt` and `completion` text.
 
 If your editor does not detect it automatically, use the Python interpreter at:
 
@@ -51,13 +54,16 @@ The project currently uses:
 - `accelerate`
 - `datasets`
 - `ipykernel`
+- `pandas`
 - `peft`
+- `pyarrow`
 - `transformers`
 - `trl[peft]`
 
 ## Notes
 
 - `sft-lora-lesson.ipynb` demonstrates supervised fine-tuning with known target completions.
+- `grpo-completion-exploration.ipynb` is useful for inspecting saved GRPO completion samples after training.
 - The lesson currently depends on the `trl` API version installed in this repo.
 
 ## Reproducibility
