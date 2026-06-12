@@ -7,5 +7,6 @@ grpo-arithmetic-lora-adapter/
 grpo-arithmetic-lora-demo/
 sft-arithmetic-lora-adapter/
 sft-arithmetic-lora-demo/
+ludwig-rft-grpo-demo
 
 .DS_Store
