@@ -4,11 +4,14 @@ This repository contains small experiments for supervised and reinforcement fine
 
 - `sft-lora-lesson.ipynb`: a LoRA + SFT arithmetic lesson
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
+- `rft-lora-early-stopping.ipynb`: a GRPO + LoRA lesson with validation-based moving-average early stopping
 - `grpo-completion-exploration.ipynb`: a notebook for inspecting GRPO completion Parquet files
 
 ## Fine-Tuning Task
 
-Both notebooks fine-tune a model on a simple arithmetic addition task. Given prompts such as `What is 9 + 3?`, the model is trained to respond in the exact format `<think>...</think><answer>...</answer>`, where the `<answer>` tag contains the correct sum.
+The training notebooks fine-tune a model on a simple arithmetic addition task. Given prompts such as `What is 9 + 3?`, the model is trained to respond in the exact format `<think>...</think><answer>...</answer>`, where the `<answer>` tag contains the correct sum.
+
+The early stopping notebook uses the same task, but splits the data into train, validation, and test subsets so GRPO training can stop when held-out reward stops improving.
 
 For details on how RFT works see [RFT Explanation document](./rft-explanation.md)
 
@@ -39,7 +42,14 @@ This will create `.venv` and install the project dependencies from `pyproject.to
 
 ## Using The Notebook
 
-Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, or `grpo-completion-exploration.ipynb` in your notebook editor and select the local kernel from `.venv`.
+Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, `rft-lora-early-stopping.ipynb`, or `grpo-completion-exploration.ipynb` in your notebook editor and select the local kernel from `.venv`.
+
+`rft-lora-early-stopping.ipynb` extends the basic GRPO lesson with:
+
+- a train/validation/test split
+- periodic evaluation during training
+- a custom moving-average early stopping callback
+- best-checkpoint reloading based on `smoothed_reward`
 
 `grpo-completion-exploration.ipynb` reads a file from `grpo-arithmetic-lora-demo/completions` into a pandas DataFrame. Set `parquet_filename` at the top of the notebook to choose the file, and optionally change `records_to_show` to control how many records are rendered. The notebook prints the requested count, the total number of records in the file, and the number actually shown, then displays each record with the full `prompt` and `completion` text.
 
@@ -63,6 +73,7 @@ The project currently uses:
 ## Notes
 
 - `sft-lora-lesson.ipynb` demonstrates supervised fine-tuning with known target completions.
+- `rft-lora-early-stopping.ipynb` demonstrates validation-based GRPO training with moving-average early stopping and best-model selection.
 - `grpo-completion-exploration.ipynb` is useful for inspecting saved GRPO completion samples after training.
 - The lesson currently depends on the `trl` API version installed in this repo.
 
@@ -71,6 +82,8 @@ The project currently uses:
 Metrics from the out-of-sample test data set.
 
 ### Reinforcement Fine-Tuning (RFT)
+
+#### Initial Test
 
 ```
 lora_config = LoraConfig(
@@ -111,6 +124,8 @@ training_args = GRPOConfig(
 |Qwen2.5-1.5B-Instruct|1|![](./images/rft-eval-run-6-before.png)|![](./images/rft-eval-run-6.png)|
 |Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-7.png)|
 
+#### Increased Batch Size & Epochs
+
 ```
 lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
@@ -146,106 +161,63 @@ training_args = GRPOConfig(
 |Qwen2.5-0.5B-Instruct|4|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-10.png)|
 
 
+#### Early Stopping
+
+```
+lora_config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM,
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
+    target_modules=[
+        "q_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
+)
+
+moving_average_window = 5
+early_stopping_patience = 5
+early_stopping_threshold = 0.0
+
+training_args = GRPOConfig(
+    output_dir="grpo-arithmetic-lora-early-stopping-demo",
+    per_device_train_batch_size=8,
+    gradient_accumulation_steps=4,
+    num_generations=4,
+    num_generations_eval=4,
+    max_completion_length=64,
+    temperature=1.0,
+    top_p=1.0,
+    top_k=0,
+    min_p=None,
+    repetition_penalty=1.0,
+    num_train_epochs=8,
+    logging_steps=10,
+    learning_rate=5e-5,
+    log_completions=False, #True,
+    eval_strategy="steps",
+    eval_steps=10,
+    save_strategy="steps",
+    save_steps=10,
+    load_best_model_at_end=True,
+    metric_for_best_model="smoothed_reward",
+    greater_is_better=True,
+    save_total_limit=2,
+)
+```
+
+|Model|Actual/Max epochs|Before RFT|After RFT|
+|-----|:----:|----------|---------|
+|Qwen2.5-0.5B-Instruct|3/8|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-11.png)|
+
+
 ### Supervised Fine-Tuning (SFT)
 
 |Model|epochs|Before SFT|After SFT|
 |-----|:----:|----------|---------|
 |Qwen2.5-0.5B-Instruct|1|![](./images/sft-eval-run-before.png)|![](./images/sft-eval-run-1.png)|
 |Qwen2.5-0.5B-Instruct|1|![](./images/sft-eval-run-before.png)|![](./images/sft-eval-run-2.png)|
-
-
-
-## Number of batches for SFT and RFT
-
-Both notebooks start from the same amount of data. The different batch counts come from what a “batch” means to each trainer.
-
-Here are the shared values first:
-
-- `MAX_A = 21`
-  - The code loops over `a` from `1` to `20`.
-  - That gives `20` possible `a` values.
-
-- `MAX_B = 11`
-  - The code loops over `b` from `1` to `10`.
-  - That gives `10` possible `b` values.
-
-- Total examples:
-  - `20 * 10 = 200`
-  - Each example is one addition problem like `"What is 9 + 3?"`
-
-- `test_size = 0.25`
-  - 25% of the 200 examples go to test.
-  - `200 * 0.25 = 50` test examples.
-
-- Training examples:
-  - `200 - 50 = 150`
-  - So both notebooks train on exactly `150` examples.
-
-For the SFT notebook, these values mean:
-
-- `per_device_train_batch_size = 2`
-  - Each forward/backward pass uses `2` training examples.
-
-- `gradient_accumulation_steps = 4`
-  - The trainer does `4` of those small passes before taking `1` optimizer step.
-
-- So one optimizer step in SFT represents:
-  - `2 examples per mini-batch * 4 mini-batches = 8 examples`
-
-- Number of SFT mini-batches in one epoch:
-  - `150 training examples / 2 examples per mini-batch = 75 mini-batches`
-
-- Number of SFT optimizer steps in one epoch:
-  - `75 mini-batches / 4 accumulation steps = 18.75`
-  - Rounded up by the trainer, that is about `19 optimizer steps`
-
-So in SFT:
-- `2` = examples processed at once
-- `4` = how many of those small batches are accumulated
-- `8` = effective examples contributing to one parameter update
-- `19` = approximate update steps for the epoch
-
-For the RFT / GRPO notebook, the shared values `2` and `4` still exist, but there is one extra value:
-
-- `num_generations = 4`
-  - For each prompt, GRPO generates `4` different candidate completions.
-  - Those 4 completions form one comparison group for reward computation.
-
-Now the other values mean:
-
-- `per_device_train_batch_size = 2`
-  - GRPO starts with `2` prompts per micro-batch.
-
-- `gradient_accumulation_steps = 4`
-  - It accumulates across `4` micro-batches.
-
-- Effective GRPO batch size:
-  - `2 prompts per micro-batch * 4 accumulation steps = 8 prompt slots`
-
-- `num_generations = 4`
-  - Each actual training prompt needs `4` generated completions.
-
-- So the number of distinct prompts represented in one GRPO update is:
-  - `8 total slots / 4 generations per prompt = 2 prompts`
-
-That is the key difference.
-
-In SFT:
-- one update covers `8 distinct training examples`
-
-In GRPO:
-- one update covers `2 distinct prompts`, because each prompt is expanded into `4` sampled completions
-
-Then the GRPO epoch length becomes:
-
-- `150 training prompts / 2 prompts per update = 75 updates`
-
-So in GRPO:
-- `2` = prompts loaded per micro-batch
-- `4` = accumulation steps
-- `8` = effective prompt-generation slots in one update
-- `4` = generations sampled for each prompt
-- `2` = distinct prompts consumed per final GRPO update
-- `75` = approximate updates for the epoch
-
-That is why the batch or step count is different even though both notebooks start with the same `150` training examples. The SFT trainer uses each example once per update flow, while the GRPO trainer expands each prompt into `4` generated candidates, so each update consumes fewer distinct prompts.
