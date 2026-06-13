@@ -5,6 +5,8 @@ __pycache__/
 # model training folders
 grpo-arithmetic-lora-adapter/
 grpo-arithmetic-lora-demo/
+grpo-arithmetic-lora-early-stopping-adapter/
+grpo-arithmetic-lora-early-stopping-demo/
 sft-arithmetic-lora-adapter/
 sft-arithmetic-lora-demo/
 ludwig-rft-grpo-demo
