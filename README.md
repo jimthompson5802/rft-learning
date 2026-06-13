@@ -6,6 +6,8 @@ This repository contains small experiments for supervised and reinforcement fine
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
 - `rft-lora-early-stopping.ipynb`: a GRPO + LoRA lesson with validation-based moving-average early stopping
 - `grpo-completion-exploration.ipynb`: a notebook for inspecting GRPO completion Parquet files
+- `visualize_lora_model.ipynb`: a notebook for visualizing a PEFT LoRA checkpoint and reporting model, checkpoint, and training metadata
+- `visualize_baseline_model.ipynb`: a notebook for visualizing the original base model before any LoRA adapters are applied
 
 ## Fine-Tuning Task
 
@@ -42,7 +44,7 @@ This will create `.venv` and install the project dependencies from `pyproject.to
 
 ## Using The Notebook
 
-Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, `rft-lora-early-stopping.ipynb`, or `grpo-completion-exploration.ipynb` in your notebook editor and select the local kernel from `.venv`.
+Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, `rft-lora-early-stopping.ipynb`, `grpo-completion-exploration.ipynb`, `visualize_lora_model.ipynb`, or `visualize_baseline_model.ipynb` in your notebook editor and select the local kernel from `.venv`.
 
 `rft-lora-early-stopping.ipynb` extends the basic GRPO lesson with:
 
@@ -52,6 +54,10 @@ Open `sft-lora-lesson.ipynb`, `rft-lora-lesson.ipynb`, `rft-lora-early-stopping.
 - best-checkpoint reloading based on `smoothed_reward`
 
 `grpo-completion-exploration.ipynb` reads a file from `grpo-arithmetic-lora-demo/completions` into a pandas DataFrame. Set `parquet_filename` at the top of the notebook to choose the file, and optionally change `records_to_show` to control how many records are rendered. The notebook prints the requested count, the total number of records in the file, and the number actually shown, then displays each record with the full `prompt` and `completion` text.
+
+`visualize_lora_model.ipynb` loads a PEFT LoRA checkpoint such as `sft-arithmetic-lora-demo/checkpoint-19` or `grpo-arithmetic-lora-demo/checkpoint-72`, resolves the associated base model, applies the adapter, renders a `torchinfo` summary, and displays a report with parameter counts, LoRA metadata, and checkpoint/training details when available.
+
+`visualize_baseline_model.ipynb` uses the same `checkpoint_dir` style input, but only to resolve `base_model_name_or_path`. It then loads the original baseline model without applying any LoRA adapter, renders a `torchinfo` summary, and reports baseline-only information such as parameter totals, dtype breakdown, and tokenizer details.
 
 If your editor does not detect it automatically, use the Python interpreter at:
 
@@ -67,6 +73,7 @@ The project currently uses:
 - `pandas`
 - `peft`
 - `pyarrow`
+- `torchinfo`
 - `transformers`
 - `trl[peft]`
 
@@ -75,6 +82,8 @@ The project currently uses:
 - `sft-lora-lesson.ipynb` demonstrates supervised fine-tuning with known target completions.
 - `rft-lora-early-stopping.ipynb` demonstrates validation-based GRPO training with moving-average early stopping and best-model selection.
 - `grpo-completion-exploration.ipynb` is useful for inspecting saved GRPO completion samples after training.
+- `visualize_lora_model.ipynb` is useful for inspecting saved PEFT LoRA checkpoints and their associated adapter/training metadata.
+- `visualize_baseline_model.ipynb` is useful for inspecting the original base model referenced by a saved PEFT LoRA checkpoint.
 - The lesson currently depends on the `trl` API version installed in this repo.
 
 ## Reproducibility
