@@ -17,6 +17,32 @@ The early stopping notebook uses the same task, but splits the data into train, 
 
 For details on how RFT works see [RFT Explanation document](./rft-explanation.md)
 
+## Best Evaluation Performance on the Task
+
+### Best RFT and SFT Results on out-of-sample test dataset
+
+| Method | Epochs | Before Training | After Training |
+|---|---:|---|---|
+| **RFT without early stopping** | 4 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Reward: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Reward: 1.500** |
+| **RFT with early stopping** | 3 of 8 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Reward: 0.000 | **Accuracy: 94/94 (100%)**<br>**Format: 94/94 (100%)**<br>**Reward: 1.500** |
+| **SFT** | 1 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Score: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Score: 1.500** |
+
+All three approaches achieved perfect post-training accuracy and format compliance. RFT with early stopping did so after 3 epochs and was evaluated on the largest test set.
+
+**SFT vs. RFT Trade-offs**
+
+| Consideration | SFT | RFT using GRPO |
+|---|---|---|
+| Training signal | Requires correct example responses | Requires a reward function that can score generated responses |
+| Data creation | Potentially expensive expert demonstrations | Can use prompts without target completions |
+| Compute cost | Lower; one training pass per example | Higher; generates and scores multiple completions per prompt |
+| Training stability | Generally predictable and stable | More sensitive to hyperparameters, sampling, and reward design |
+| Behavior learned | Imitates the demonstrations | Directly optimizes measurable outcomes |
+| Output flexibility | Limited by the quality and diversity of examples | Can discover successful outputs not present in demonstrations |
+| Main risk | Memorization or imitation of flaws in the dataset | Reward hacking, unstable runs, or degraded behavior outside the reward |
+| Best fit | Well-defined desired responses are available | Success is easy to verify, but ideal responses are hard to author |
+
+
 ## Requirements
 
 - `uv`
