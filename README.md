@@ -70,7 +70,36 @@ The project currently uses:
 
 Metrics from the out-of-sample test data set.
 
-### RFT
+### Reinforcement Fine-Tuning (RFT)
+
+```
+lora_config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM,
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
+    target_modules=[
+        "q_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
+)
+training_args = GRPOConfig(
+    output_dir="grpo-arithmetic-lora-demo",
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=4,
+    num_generations=4,
+    max_completion_length=64,
+    num_train_epochs=1,
+    logging_steps=10,
+    learning_rate=5e-5,
+    log_completions=True,
+)
+```
+
 
 |Model|epochs|Before RFT|After RFT|
 |-----|:----:|----------|---------|
@@ -82,11 +111,42 @@ Metrics from the out-of-sample test data set.
 |Qwen2.5-1.5B-Instruct|1|![](./images/rft-eval-run-6-before.png)|![](./images/rft-eval-run-6.png)|
 |Qwen2.5-0.5B-Instruct|1|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-7.png)|
 
+```
+lora_config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM,
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
+    target_modules=[
+        "q_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
+)
+training_args = GRPOConfig(
+    output_dir="grpo-arithmetic-lora-demo",
+    per_device_train_batch_size=8,            <==
+    gradient_accumulation_steps=4,
+    num_generations=4,
+    max_completion_length=64,
+    num_train_epochs=4,                       <==
+    logging_steps=10,
+    learning_rate=5e-5,
+    log_completions=True,
+)
+```
+
+|Model|epochs|Before RFT|After RFT|
+|-----|:----:|----------|---------|
+|Qwen2.5-0.5B-Instruct|4|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-8.png)|
+|Qwen2.5-0.5B-Instruct|4|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-9.png)|
+|Qwen2.5-0.5B-Instruct|4|![](./images/rft-eval-run-before.png)|![](./images/rft-eval-run-10.png)|
 
 
-
-
-### SFT
+### Supervised Fine-Tuning (SFT)
 
 |Model|epochs|Before SFT|After SFT|
 |-----|:----:|----------|---------|
