@@ -173,7 +173,7 @@ The parent run stores prefixed summary metrics such as `baseline.accuracy` and `
 
 
 
-## Reproducibility (Deprecated Results - Kept for Historical Purposes - Current metrics are found in MLFlow)
+## Reproducibility (Deprecated - Kept for Historical Purposes - Current metrics are found in MLFlow)
 
 Metrics from the out-of-sample test data set.
 
