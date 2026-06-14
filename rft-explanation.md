@@ -28,7 +28,8 @@ The RFT notebook does not train on a gold assistant completion. Instead, it lets
 - `correctness_reward`
   - gives `1.0` when the extracted answer matches the expected sum
 - `think_reward`
-  - gives `1.0` when the first `<think>` block is exactly `x + y` or `What is x + y` for the ordered operands in the prompt
+  - gives `1.0` when the first `<think>` block, after trimming outer whitespace, is exactly `x + y` or `What is x + y` for the ordered operands in the prompt
+  - gives `0.0` for equations such as `x + y = result`, reversed operands, punctuation variants, prose, malformed prompts, or missing `<think>` tags
 
 The total reward is:
 
@@ -36,7 +37,7 @@ The total reward is:
 total_reward = format_reward + correctness_reward + think_reward
 ```
 
-A completion earns up to `2.5`: `0.5` for the required tags, `1.0` for the correct answer, and `1.0` for valid think content. The components are independent, so a response can still earn one component when another fails.
+A completion earns up to `2.5`: `0.5` for the required tags, `1.0` for the correct answer, and `1.0` for valid think content. The components are independent, so a response can still earn one component when another fails. For example, a response could earn `think_reward` even if it omits `<answer>`, or earn `correctness_reward` while failing the think-content check.
 
 ## Why Use RFT
 
@@ -93,7 +94,7 @@ Those candidates might differ in:
 
 - whether they use the required tags
 - whether the math is correct
-- how cleanly they structure the response
+- whether the first `<think>` block exactly restates the prompt expression
 
 This gives the trainer several alternatives to compare for the same underlying task.
 
@@ -109,6 +110,7 @@ For example:
 
 - a correctly formatted but wrong answer might receive `0.5`
 - a correctly formatted answer with valid think content but a wrong answer might receive `1.5`
+- an answer can still receive `1.0` from `correctness_reward` alone if the extracted `<answer>` is correct but the other checks fail
 - a completion satisfying all three reward checks receives `2.5`
 
 At this point, every sampled completion has a scalar reward attached to it.
@@ -141,6 +143,7 @@ So the model improves not by memorizing a single gold response, but by gradually
 Over many updates, the model learns patterns such as:
 
 - include `<think>` and `<answer>` tags
+- restate the ordered arithmetic expression in the first `<think>` block as `x + y` or `What is x + y`
 - place the final numeric result inside `<answer>`
 - produce answers that match the arithmetic target
 
