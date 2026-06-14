@@ -15,30 +15,28 @@ In that sense, SFT and RFT answer different training questions:
 
 This project uses a small arithmetic task:
 
-- Prompt example: `What is 9 + 3? Respond exactly as <think>...</think><answer>...</answer>`
+- Prompt example: `What is 9 + 3? Respond exactly as <think>9 + 3</think><answer>...</answer>`
 - Desired behavior:
   - the model should produce the correct sum
   - the model should follow the required tagged format
+  - the `<think>` text should restate the ordered expression from the prompt
 
-The RFT notebook does not train on a gold assistant completion. Instead, it lets the model generate completions and then scores them with two reward functions:
+The RFT notebook does not train on a gold assistant completion. Instead, it lets the model generate completions and then scores them with three reward functions:
 
 - `format_reward`
   - gives `0.5` when the response includes both `<think>` and `<answer>` tags
 - `correctness_reward`
   - gives `1.0` when the extracted answer matches the expected sum
+- `think_reward`
+  - gives `1.0` when the first `<think>` block is exactly `x + y` or `What is x + y` for the ordered operands in the prompt
 
 The total reward is:
 
 ```text
-total_reward = format_reward + correctness_reward
+total_reward = format_reward + correctness_reward + think_reward
 ```
 
-That means a completion can receive:
-
-- `0.0` if it is badly formatted and wrong
-- `0.5` if it is correctly formatted but wrong
-- `1.0` in the unusual case where the extracted answer matches but the required format check fails
-- `1.5` if it is both correctly formatted and correct
+A completion earns up to `2.5`: `0.5` for the required tags, `1.0` for the correct answer, and `1.0` for valid think content. The components are independent, so a response can still earn one component when another fails.
 
 ## Why Use RFT
 
@@ -82,7 +80,7 @@ The important idea is that the model is not directly told which exact sentence t
 The trainer starts with prompts from the arithmetic training set, such as:
 
 ```text
-What is 9 + 3? Respond exactly as <think>...</think><answer>...</answer>
+What is 9 + 3? Respond exactly as <think>9 + 3</think><answer>...</answer>
 ```
 
 Each prompt also carries the expected numeric answer, which is needed for reward scoring.
@@ -105,11 +103,13 @@ Each generated completion is passed through the reward functions:
 
 - `format_reward`
 - `correctness_reward`
+- `think_reward`
 
 For example:
 
 - a correctly formatted but wrong answer might receive `0.5`
-- a correctly formatted and correct answer might receive `1.5`
+- a correctly formatted answer with valid think content but a wrong answer might receive `1.5`
+- a completion satisfying all three reward checks receives `2.5`
 
 At this point, every sampled completion has a scalar reward attached to it.
 
@@ -169,7 +169,7 @@ Why does that matter? Because the model usually should not be updated based only
 
 In this repo, GRPO generates multiple completions for the same prompt and compares them as a group. That means the training signal is not just:
 
-- "this completion got reward `1.5`"
+- "this completion got reward `2.5`"
 
 It is more like:
 
@@ -199,10 +199,10 @@ The effect is:
 Suppose one prompt produces four completions with total rewards:
 
 ```text
-[0.0, 0.5, 0.5, 1.5]
+[0.0, 0.5, 1.5, 2.5]
 ```
 
-The `1.5` completion is clearly stronger than the rest of the group, so it would have positive advantage. The `0.0` completion would have negative advantage. The model update would push probability mass toward outputs like the `1.5` example and away from outputs like the `0.0` example.
+The `2.5` completion is clearly stronger than the rest of the group, so it would have positive advantage. The `0.0` completion would have negative advantage. The model update would push probability mass toward outputs like the `2.5` example and away from outputs like the `0.0` example.
 
 ### Why advantage is helpful
 
@@ -240,6 +240,7 @@ The reward functions provide the scoring signal:
 
 - `format_reward`
 - `correctness_reward`
+- `think_reward`
 
 Those rewards are combined into a total reward for each sampled completion. GRPO then turns those rewards into a relative signal, which is the advantage.
 

@@ -18,6 +18,8 @@ The early stopping notebook uses the same task, but splits the data into train, 
 
 For details on how RFT works see [RFT Explanation document](./rft-explanation.md)
 
+RFT uses three independent reward components: `format_reward` (`0.5`), `correctness_reward` (`1.0`), and `think_reward` (`1.0`). The think reward requires the first `<think>` block to contain exactly `x + y` or `What is x + y`, using the ordered operands from the prompt. The maximum current reward is `2.5`; SFT uses the same scoring only during evaluation.
+
 ## Best Evaluation Performance on the Task
 
 ### Best RFT and SFT Results on out-of-sample test dataset
@@ -29,6 +31,8 @@ For details on how RFT works see [RFT Explanation document](./rft-explanation.md
 | **SFT** | 1 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Score: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Score: 1.500** |
 
 All three approaches achieved perfect post-training accuracy and format compliance. RFT with early stopping did so after 3 epochs and was evaluated on the largest test set.
+
+The results above were recorded before `think_reward` was added and retain their original `1.5` scoring scale.
 
 **SFT vs. RFT Trade-offs**
 
