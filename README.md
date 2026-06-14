@@ -154,7 +154,28 @@ Each notebook execution creates:
 
 The parent run stores prefixed summary metrics such as `baseline.accuracy` and `fine_tuned.avg_reward`, while child runs hold phase-specific metrics, configs, and artifacts.
 
-## Reproducibility
+### Sample MLFlow Visualizations
+
+**MLFlow Experiment Run Listing**
+![](./images/mlflow-01.png)
+
+**Selecting Runs for Comparison**
+![](./images/mlflow-02.png)
+
+**Reward Values Before and After Fine-tuning**
+![](./images/mlflow-03.png)
+
+**Experiment Run Configurations**
+![](./images/mlflow-06.png)
+
+**Training History Data**
+![](./images/mlflow-04.png)
+
+![](./images/mlflow-05.png)
+
+
+
+## Reproducibility (Deprecated Results - Kept for Historical Purposes - Current metrics are found in MLFlow)
 
 Metrics from the out-of-sample test data set.
 
