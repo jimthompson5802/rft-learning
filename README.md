@@ -13,7 +13,7 @@ This repository contains small experiments for supervised and reinforcement fine
 
 ## Fine-Tuning Task
 
-The training notebooks fine-tune a model on a simple arithmetic addition task. Given prompts such as `What is 9 + 3?`, the model is trained to respond in the exact format `<think>...</think><answer>...</answer>`, where the `<answer>` tag contains the correct sum.
+The training notebooks fine-tune a small Hugging Face model on a simple arithmetic addition task. Given prompts such as `What is 9 + 3?`, the model is trained to respond in the exact format `<think>...</think><answer>...</answer>`, where the `<answer>` tag contains the correct sum.
 
 The early stopping notebook uses the same task, but splits the data into train, validation, and test subsets so GRPO training can stop when held-out reward stops improving.
 
@@ -21,19 +21,17 @@ For details on how RFT works see [RFT Explanation document](./rft-explanation.md
 
 RFT uses three independent reward components: `format_reward` (`0.5`), `correctness_reward` (`1.0`), and `think_reward` (`1.0`). The think reward requires the first `<think>` block to contain exactly `x + y` or `What is x + y`, using the ordered operands from the prompt. The maximum current reward is `2.5`; SFT uses the same scoring only during evaluation.
 
-## Best Evaluation Performance on the Task
+## Evaluation Performance on the Task
 
-### Best RFT and SFT Results on out-of-sample test dataset
+### RFT and SFT Results on out-of-sample test dataset
 
 | Method | Epochs | Before Training | After Training |
 |---|---:|---|---|
-| **RFT without early stopping** | 4 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Reward: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Reward: 1.500** |
-| **RFT with early stopping** | 3 of 8 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Reward: 0.000 | **Accuracy: 94/94 (100%)**<br>**Format: 94/94 (100%)**<br>**Reward: 1.500** |
-| **SFT** | 1 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Score: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Score: 1.500** |
+| **RFT without early stopping** | 4 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Think: 0/50 (0%)<br>Reward: 0.000 | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Think: 50/50 (100%)**<br>**Reward: 2.500** |
+| **RFT with early stopping** | 3 of 8 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Think: 0/50 (0%)<br>Reward: 0.000  | **Accuracy: 93/94 (98.94%)**<br>**Format: 94/94 (100%)**<br>**Think: 94/94 (100%)**<br>**Reward: 2.489** |94
+| **SFT** | 1 | Accuracy: 0/50 (0%)<br>Format: 0/50 (0%)<br>Think: 0/50 (0%)<br>Reward: 0.000  | **Accuracy: 50/50 (100%)**<br>**Format: 50/50 (100%)**<br>**Think: 50/50 (100%)**<br>**Score: 2.500** |
 
 All three approaches achieved perfect post-training accuracy and format compliance. RFT with early stopping did so after 3 epochs and was evaluated on the largest test set.
-
-The results above were recorded before `think_reward` was added and retain their original `1.5` scoring scale.
 
 **SFT vs. RFT Trade-offs**
 
