@@ -285,8 +285,8 @@ def log_eval_result(
     rows = result.get("rows", [])
     label = result.get("label", phase)
 
-    log_params({"label": label, "settings": settings}, prefix=f"eval.{phase}")
-    log_metrics(metrics, prefix=phase)
+    log_params({"label": label, "settings": settings})
+    log_metrics(metrics)
     log_json_artifact(f"{phase}_summary.json", result, artifact_path=artifact_path)
     log_rows_artifact(f"{phase}_samples.json", samples, artifact_path=artifact_path)
     log_rows_artifact(f"{phase}_rows.json", rows, artifact_path=artifact_path)

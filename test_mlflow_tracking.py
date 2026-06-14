@@ -186,15 +186,19 @@ class MlflowTrackingTests(unittest.TestCase):
                 parent_metric_prefix="baseline",
             )
 
-        logged_metric_keys = {key for key, _, _ in fake_mlflow.logged_metrics}
+        logged_metric_keys = [key for key, _, _ in fake_mlflow.logged_metrics]
+        self.assertIn("accuracy", logged_metric_keys)
+        self.assertIn("avg_reward", logged_metric_keys)
         self.assertIn("baseline.accuracy", logged_metric_keys)
         self.assertIn("baseline.avg_reward", logged_metric_keys)
-        self.assertIn("baseline.accuracy", logged_metric_keys)
-        self.assertIn("baseline.avg_reward", logged_metric_keys)
+        self.assertEqual(fake_mlflow.param_values["label"], "Before SFT + LoRA")
+        self.assertEqual(fake_mlflow.param_values["settings.do_sample"], "false")
+        self.assertEqual(fake_mlflow.param_values["settings.num_generations"], "1")
         self.assertEqual(len(fake_mlflow.logged_artifacts), 5)
 
-    def test_log_eval_result_namespaces_multiple_evaluations_in_one_run(self):
-        fake_mlflow = FakeMlflow()
+    def test_log_eval_result_reuses_flat_param_names_across_separate_runs(self):
+        greedy_mlflow = FakeMlflow()
+        sampled_mlflow = FakeMlflow()
         greedy_result = {
             "label": "Greedy",
             "metrics": {"accuracy": 1.0},
@@ -206,21 +210,48 @@ class MlflowTrackingTests(unittest.TestCase):
             "settings": {"num_generations": 4, "do_sample": True, "seed": 42},
         }
 
-        with patch.object(mlflow_tracking, "mlflow", fake_mlflow):
+        with patch.object(mlflow_tracking, "mlflow", greedy_mlflow):
             mlflow_tracking.log_eval_result("fine_tuned_eval_greedy", greedy_result)
+        with patch.object(mlflow_tracking, "mlflow", sampled_mlflow):
             mlflow_tracking.log_eval_result("fine_tuned_eval_sampled", sampled_result)
 
-        self.assertEqual(
-            fake_mlflow.param_values["eval.fine_tuned_eval_greedy.label"],
-            "Greedy",
-        )
-        self.assertEqual(
-            fake_mlflow.param_values["eval.fine_tuned_eval_sampled.label"],
-            "Sampled",
-        )
+        self.assertEqual(greedy_mlflow.param_values["label"], "Greedy")
+        self.assertEqual(greedy_mlflow.param_values["settings.do_sample"], "false")
+        self.assertEqual(sampled_mlflow.param_values["label"], "Sampled")
+        self.assertEqual(sampled_mlflow.param_values["settings.do_sample"], "true")
+        self.assertEqual([key for key, _, _ in greedy_mlflow.logged_metrics], ["accuracy"])
+        self.assertEqual([key for key, _, _ in sampled_mlflow.logged_metrics], ["accuracy"])
+
+    def test_log_eval_result_skips_parent_mirroring_when_prefix_is_omitted(self):
+        fake_mlflow = FakeMlflow()
+        result = {
+            "label": "Before SFT + LoRA",
+            "metrics": {"accuracy": 0.5, "avg_reward": 1.25},
+            "settings": {"num_generations": 1, "do_sample": False},
+        }
+
+        with patch.object(mlflow_tracking, "mlflow", fake_mlflow):
+            mlflow_tracking.log_eval_result("baseline_eval", result)
+
         logged_metric_keys = {key for key, _, _ in fake_mlflow.logged_metrics}
-        self.assertIn("fine_tuned_eval_greedy.accuracy", logged_metric_keys)
-        self.assertIn("fine_tuned_eval_sampled.accuracy", logged_metric_keys)
+        self.assertEqual(logged_metric_keys, {"accuracy", "avg_reward"})
+        self.assertEqual(fake_mlflow.param_values["label"], "Before SFT + LoRA")
+        self.assertEqual(fake_mlflow.param_values["settings.do_sample"], "false")
+
+    def test_log_eval_result_does_not_prefix_flat_params(self):
+        fake_mlflow = FakeMlflow()
+        result = {
+            "label": "Greedy",
+            "metrics": {"accuracy": 1.0},
+            "settings": {"num_generations": 1, "do_sample": False},
+        }
+
+        with patch.object(mlflow_tracking, "mlflow", fake_mlflow):
+            mlflow_tracking.log_eval_result("fine_tuned_eval", result)
+
+        self.assertEqual(fake_mlflow.param_values["label"], "Greedy")
+        self.assertEqual(fake_mlflow.param_values["settings.num_generations"], "1")
+        self.assertNotIn("eval.fine_tuned_eval.label", fake_mlflow.param_values)
 
 
 if __name__ == "__main__":
