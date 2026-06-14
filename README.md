@@ -5,6 +5,7 @@ This repository contains small experiments for supervised and reinforcement fine
 - `sft-lora-lesson.ipynb`: a LoRA + SFT arithmetic lesson
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
 - `rft-lora-early-stopping.ipynb`: a GRPO + LoRA lesson with validation-based moving-average early stopping
+- `rewards.py`: shared answer parsing and reward computations used by all three training notebooks
 - `grpo-completion-exploration.ipynb`: a notebook for inspecting GRPO completion Parquet files
 - `visualize_lora_model.ipynb`: a notebook for visualizing a PEFT LoRA checkpoint and reporting model, checkpoint, and training metadata
 - `visualize_baseline_model.ipynb`: a notebook for visualizing the original base model before any LoRA adapters are applied
