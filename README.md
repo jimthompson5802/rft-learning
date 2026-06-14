@@ -6,6 +6,7 @@ This repository contains small experiments for supervised and reinforcement fine
 - `rft-lora-lesson.ipynb`: a LoRA + GRPO arithmetic lesson
 - `rft-lora-early-stopping.ipynb`: a GRPO + LoRA lesson with validation-based moving-average early stopping
 - `rewards.py`: shared answer parsing and reward computations used by all three training notebooks
+- `mlflow_tracking.py`: shared MLflow tracking helpers for notebook runs, configs, metrics, and artifacts
 - `grpo-completion-exploration.ipynb`: a notebook for inspecting GRPO completion Parquet files
 - `visualize_lora_model.ipynb`: a notebook for visualizing a PEFT LoRA checkpoint and reporting model, checkpoint, and training metadata
 - `visualize_baseline_model.ipynb`: a notebook for visualizing the original base model before any LoRA adapters are applied
@@ -101,6 +102,7 @@ The project currently uses:
 - `accelerate`
 - `datasets`
 - `ipykernel`
+- `mlflow`
 - `pandas`
 - `peft`
 - `pyarrow`
@@ -115,7 +117,42 @@ The project currently uses:
 - `grpo-completion-exploration.ipynb` is useful for inspecting saved GRPO completion samples after training.
 - `visualize_lora_model.ipynb` is useful for inspecting saved PEFT LoRA checkpoints and their associated adapter/training metadata.
 - `visualize_baseline_model.ipynb` is useful for inspecting the original base model referenced by a saved PEFT LoRA checkpoint.
+- The three training notebooks create MLflow parent runs with child runs for baseline evaluation, training, and fine-tuned evaluation.
 - The lesson currently depends on the `trl` API version installed in this repo.
+
+## MLflow Tracking
+
+The training notebooks use MLflow to capture:
+
+- model identity and notebook type
+- LoRA and trainer configuration
+- dataset split sizes
+- baseline evaluation metrics
+- training metrics and training-history artifacts
+- fine-tuned evaluation metrics and sample artifacts
+
+By default, MLflow uses a local SQLite-backed tracking store at `./mlflow.db` and writes run artifacts to `./mlartifacts`, so no external server is required.
+
+### Launch The UI
+
+After running one or more training notebooks, start the MLflow UI from the repo root:
+
+```bash
+uv run mlflow ui
+```
+
+Then open the local URL shown by MLflow, typically `http://127.0.0.1:5000`.
+
+### Run Layout
+
+Each notebook execution creates:
+
+- one parent run for the overall notebook execution
+- one child run for `baseline_eval`
+- one child run for `training`
+- one child run for `fine_tuned_eval`
+
+The parent run stores prefixed summary metrics such as `baseline.accuracy` and `fine_tuned.avg_reward`, while child runs hold phase-specific metrics, configs, and artifacts.
 
 ## Reproducibility
 
